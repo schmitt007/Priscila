@@ -1,0 +1,14 @@
+{
+  "name": "priscila-modas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Site da loja Priscila Modas com servidor Node.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "check": "node --check server.js && node --check public/js/navigation.js && node --check public/js/cart.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
