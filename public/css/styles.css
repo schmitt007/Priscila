@@ -306,13 +306,6 @@ h2 em {
   line-height: 1.55;
 }
 
-.note-star {
-  color: var(--pink);
-  font-family: var(--sans);
-  font-size: 29px;
-  font-style: normal;
-}
-
 .hero-visual {
   position: relative;
   min-height: 620px;
@@ -386,12 +379,6 @@ h2 em {
   font-size: 17px;
   font-style: italic;
   white-space: nowrap;
-}
-
-.ticker-group b {
-  font-family: var(--sans);
-  font-size: 12px;
-  font-style: normal;
 }
 
 @keyframes ticker-scroll {
@@ -924,14 +911,6 @@ body.cart-open {
   color: #f46cdb;
 }
 
-.manifesto-flower {
-  position: absolute;
-  right: -43px;
-  bottom: -114px;
-  color: rgb(236 40 203 / 9%);
-  font-size: 340px;
-}
-
 .shipping {
   position: relative;
   display: grid;
@@ -983,14 +962,6 @@ body.cart-open {
 .text-link-dark:hover {
   border-color: var(--pink);
   color: var(--pink-dark);
-}
-
-.shipping-doodle {
-  position: absolute;
-  right: 3%;
-  bottom: -45px;
-  color: rgb(236 40 203 / 10%);
-  font-size: 160px;
 }
 
 .hours {
@@ -1418,12 +1389,6 @@ body.cart-open {
   .shipping-copy {
     grid-column: 2;
     justify-self: start;
-  }
-
-  .shipping-doodle {
-    right: -35px;
-    bottom: -36px;
-    font-size: 120px;
   }
 
   .hours {
