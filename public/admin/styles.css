@@ -45,6 +45,11 @@ button {
   min-height: 100vh;
 }
 
+#login-screen[hidden],
+#admin-screen[hidden] {
+  display: none !important;
+}
+
 .auth-screen {
   display: none;
   place-items: center;
@@ -53,6 +58,7 @@ button {
 
 .auth-screen.active {
   display: grid;
+  min-height: 100vh;
 }
 
 .auth-card {
