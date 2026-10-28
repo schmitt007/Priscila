@@ -12,6 +12,9 @@ const orderTable = document.querySelector("#order-table");
 const navButtons = document.querySelectorAll(".nav-button");
 const adminViews = document.querySelectorAll(".admin-view");
 const dashboardTitle = document.querySelector("#dashboard-title");
+const productIdField = productForm?.querySelector('input[name="productId"]');
+const submitButton = productForm?.querySelector('button[type="submit"]');
+const orderStatusOptions = ["Pendente", "Em produção", "Concluído", "Cancelado"];
 
 const state = {
   user: null,
@@ -23,6 +26,40 @@ const state = {
 function setMessage(element, message, type = "") {
   element.textContent = message;
   element.className = `form-message ${type}`.trim();
+}
+
+function resetProductForm() {
+  productForm.reset();
+  if (productIdField) productIdField.value = "";
+  if (submitButton) submitButton.textContent = "Salvar produto";
+}
+
+function populateProductForm(product) {
+  if (!product) return;
+  if (productIdField) productIdField.value = product.id;
+  if (submitButton) submitButton.textContent = "Atualizar produto";
+
+  const formData = new FormData(productForm);
+  formData.set("name", product.name || "");
+  formData.set("category", product.category || "Geral");
+  formData.set("price", Number(product.price || 0));
+  formData.set("image", product.image || "");
+  formData.set("description", product.description || "");
+  formData.set("featured", product.featured ? "on" : "");
+  formData.set("active", product.active === false ? "" : "on");
+  formData.set("sizes", Array.isArray(product.sizes) ? product.sizes.join(", ") : "");
+
+  productForm.querySelector('[name="name"]').value = product.name || "";
+  productForm.querySelector('[name="category"]').value = product.category || "Geral";
+  productForm.querySelector('[name="price"]').value = Number(product.price || 0);
+  productForm.querySelector('[name="image"]').value = product.image || "";
+  productForm.querySelector('[name="description"]').value = product.description || "";
+  productForm.querySelector('[name="featured"]').checked = Boolean(product.featured);
+  productForm.querySelector('[name="active"]').checked = product.active !== false;
+  productForm.querySelector('[name="sizes"]').value = Array.isArray(product.sizes) ? product.sizes.join(", ") : "";
+
+  showView("products");
+  productForm.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function showView(viewName) {
@@ -63,6 +100,7 @@ function renderProducts({ products, summaryTarget = productList }) {
           </div>
           <div class="product-actions">
             <span class="status-pill">${status}</span>
+            <button type="button" class="action-button edit" data-edit-product="${product.id}">Editar</button>
             <button type="button" class="action-button delete" data-delete-product="${product.id}">Excluir</button>
           </div>
         </div>
@@ -80,6 +118,10 @@ function renderOrders(orders) {
     return;
   }
 
+  const renderOption = (status) => `
+    <option value="${status}" ${status === order.status ? "selected" : ""}>${status}</option>
+  `;
+
   ordersList.innerHTML = orders
     .slice(0, 4)
     .map((order) => `
@@ -88,7 +130,9 @@ function renderOrders(orders) {
           <strong>${order.id}</strong>
           <small>${order.customer}</small>
         </div>
-        <span class="status-pill">${order.status}</span>
+        <select class="order-status-select" data-order-id="${order.id}" aria-label="Status do pedido ${order.id}">
+          ${orderStatusOptions.map((status) => `<option value="${status}" ${status === order.status ? "selected" : ""}>${status}</option>`).join("")}
+        </select>
       </div>
     `)
     .join("");
@@ -104,7 +148,9 @@ function renderOrders(orders) {
           <small>${order.items} itens</small>
           <small>${order.total}</small>
         </div>
-        <span class="status-pill">${order.status}</span>
+        <select class="order-status-select" data-order-id="${order.id}" aria-label="Status do pedido ${order.id}">
+          ${orderStatusOptions.map((status) => `<option value="${status}" ${status === order.status ? "selected" : ""}>${status}</option>`).join("")}
+        </select>
       </div>
     `)
     .join("");
@@ -197,7 +243,7 @@ async function logout() {
   loginScreen.hidden = false;
   loginScreen.classList.add("active");
   adminScreen.hidden = true;
-  productForm.reset();
+  resetProductForm();
 }
 
 loginForm.addEventListener("submit", async (event) => {
@@ -222,6 +268,7 @@ navButtons.forEach((button) => {
 productForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const formData = new FormData(productForm);
+  const productId = String(formData.get("productId") || "").trim();
   const payload = {
     name: String(formData.get("name") || "").trim(),
     category: String(formData.get("category") || "Geral").trim(),
@@ -237,12 +284,22 @@ productForm.addEventListener("submit", async (event) => {
   };
 
   try {
-    const result = await fetchJson("/api/admin/products", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-    productForm.reset();
-    setMessage(productMessage, `Produto “${result.product.name}” salvo com sucesso.`, "success");
+    let result;
+    if (productId) {
+      result = await fetchJson(`/api/admin/products/${encodeURIComponent(productId)}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
+      setMessage(productMessage, `Produto “${result.product.name}” atualizado com sucesso.`, "success");
+    } else {
+      result = await fetchJson("/api/admin/products", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      setMessage(productMessage, `Produto “${result.product.name}” salvo com sucesso.`, "success");
+    }
+
+    resetProductForm();
     await loadDashboard();
   } catch (error) {
     setMessage(productMessage, error.message, "error");
@@ -250,15 +307,43 @@ productForm.addEventListener("submit", async (event) => {
 });
 
 productList.addEventListener("click", async (event) => {
-  const button = event.target.closest("[data-delete-product]");
-  if (!button) return;
+  const editButton = event.target.closest("[data-edit-product]");
+  if (editButton) {
+    const productId = editButton.dataset.editProduct;
+    const product = state.products.find((entry) => String(entry.id) === String(productId));
+    populateProductForm(product);
+    return;
+  }
 
-  const productId = button.dataset.deleteProduct;
+  const deleteButton = event.target.closest("[data-delete-product]");
+  if (!deleteButton) return;
+
+  const productId = deleteButton.dataset.deleteProduct;
   if (!productId) return;
 
   try {
     await fetchJson(`/api/admin/products/${encodeURIComponent(productId)}`, {
       method: "DELETE",
+    });
+    resetProductForm();
+    await loadDashboard();
+  } catch (error) {
+    setMessage(productMessage, error.message, "error");
+  }
+});
+
+document.addEventListener("change", async (event) => {
+  const select = event.target.closest(".order-status-select");
+  if (!select) return;
+
+  const { orderId } = select.dataset;
+  const status = select.value;
+  if (!orderId || !status) return;
+
+  try {
+    await fetchJson(`/api/admin/orders/${encodeURIComponent(orderId)}`, {
+      method: "PUT",
+      body: JSON.stringify({ status }),
     });
     await loadDashboard();
   } catch (error) {

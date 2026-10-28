@@ -15,7 +15,7 @@ const defaultStore = {
     {
       id: "blusa-azul-shorts-jeans",
       name: "Bata modal + short jeans",
-      category: "Casual",
+      category: "Look casual",
       price: 0,
       sizes: ["Único", "36", "38", "40", "42", "44"],
       image: "/assets/produtos/look-blusa-azul-shorts-jeans.png",
@@ -33,7 +33,55 @@ const defaultStore = {
       image: "/assets/produtos/look-conjunto-vinho.png",
       featured: true,
       active: true,
-      description: "Conjunto elegante e sofisticado para ocasiões especiais.",
+      description: "Conjunto tamanho único. Elegância e conforto em uma combinação só.",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: "macaquinho-azul",
+      name: "Macaquinho vestido azul",
+      category: "Look leve",
+      price: 0,
+      sizes: ["Único"],
+      image: "/assets/produtos/look-macaquinho-azul.png",
+      featured: true,
+      active: true,
+      description: "Macaquinho vestido tamanho único, leve e delicado.",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: "vestido-longo-floral",
+      name: "Vestido longo floral",
+      category: "Vestido",
+      price: 0,
+      sizes: ["Único"],
+      image: "/assets/produtos/look-vestido-longo-floral.png",
+      featured: true,
+      active: true,
+      description: "Tamanho único (veste do 36 ao 44), com estampa floral para momentos especiais.",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: "blusa-azul-calca-vinho",
+      name: "Body azul em poliamida",
+      category: "Look elegante",
+      price: 0,
+      sizes: ["Único"],
+      image: "/assets/produtos/look-blusa-azul-calca-vinho.png",
+      featured: true,
+      active: true,
+      description: "Body tamanho único, confeccionado em 100% poliamida.",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: "vestido-midi-preto",
+      name: "Vestido preto",
+      category: "Vestido",
+      price: 0,
+      sizes: ["Único"],
+      image: "/assets/produtos/look-vestido-midi-preto.png",
+      featured: true,
+      active: true,
+      description: "Vestido tamanho único (veste do 36 ao 44), clássico e fluido.",
       createdAt: new Date().toISOString(),
     },
   ],
@@ -153,6 +201,17 @@ function serializeProduct(product) {
     featured: Boolean(product.featured),
     active: product.active !== false,
     createdAt: product.createdAt || new Date().toISOString(),
+  };
+}
+
+function serializeOrder(order, index = 0) {
+  return {
+    id: String(order.id || `PED-${(index + 1).toString().padStart(4, "0")}`),
+    customer: String(order.customer || "Cliente"),
+    status: String(order.status || "Pendente"),
+    total: String(order.total || "A confirmar"),
+    items: Number(order.items || 0),
+    createdAt: order.createdAt || new Date().toISOString(),
   };
 }
 
@@ -327,6 +386,46 @@ async function handleAdminApi(request, response, pathname) {
     }
 
     response.setHeader("Allow", "PUT, DELETE");
+    sendJson(response, 405, { error: "Método não permitido." });
+    return;
+  }
+
+  const orderMatch = pathname.match(/^\/api\/admin\/orders\/([^/]+)$/);
+  if (orderMatch) {
+    const orderId = decodeURIComponent(orderMatch[1]);
+    const store = await readStoreFile();
+    const orders = Array.isArray(store.orders) ? store.orders : [];
+    const orderIndex = orders.findIndex((order) => String(order.id) === String(orderId));
+
+    if (request.method === "PUT") {
+      let body = "";
+      request.on("data", (chunk) => {
+        body += chunk;
+      });
+      request.on("end", async () => {
+        try {
+          const payload = JSON.parse(body || "{}");
+          if (orderIndex === -1) {
+            sendJson(response, 404, { error: "Pedido não encontrado." });
+            return;
+          }
+
+          orders[orderIndex] = serializeOrder({
+            ...orders[orderIndex],
+            ...payload,
+            id: String(orderId),
+          }, orderIndex);
+          store.orders = orders;
+          await writeStoreFile(store);
+          sendJson(response, 200, { order: orders[orderIndex] });
+        } catch {
+          sendJson(response, 400, { error: "Dados do pedido inválidos." });
+        }
+      });
+      return;
+    }
+
+    response.setHeader("Allow", "PUT");
     sendJson(response, 405, { error: "Método não permitido." });
     return;
   }

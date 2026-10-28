@@ -3,7 +3,7 @@
     {
       "id": "blusa-azul-shorts-jeans",
       "name": "Bata modal + short jeans",
-      "category": "Casual",
+      "category": "Look casual",
       "price": 0,
       "sizes": [
         "Único",
@@ -30,30 +30,71 @@
       "image": "/assets/produtos/look-conjunto-vinho.png",
       "featured": true,
       "active": true,
-      "description": "Conjunto elegante e sofisticado para ocasiões especiais.",
+      "description": "Conjunto tamanho único. Elegância e conforto em uma combinação só.",
       "createdAt": "2026-10-28T12:55:28.475Z"
     },
     {
-      "id": "3a302630-338f-4c00-af7a-df1b99d761fd",
-      "name": "Produto teste",
-      "category": "Teste",
+      "id": "macaquinho-azul",
+      "name": "Macaquinho vestido azul",
+      "category": "Look leve",
       "price": 0,
       "sizes": [
-        "?nico",
-        "38"
+        "Único"
       ],
-      "image": "/assets/produtos/look-vestido-midi-preto.png",
-      "description": "Produto carregado do painel",
+      "image": "/assets/produtos/look-macaquinho-azul.png",
       "featured": true,
       "active": true,
-      "createdAt": "2026-10-28T14:27:45.305Z"
+      "description": "Macaquinho vestido tamanho único, leve e delicado.",
+      "createdAt": "2026-10-28T12:55:28.476Z"
+    },
+    {
+      "id": "vestido-longo-floral",
+      "name": "Vestido longo floral",
+      "category": "Vestido",
+      "price": 0,
+      "sizes": [
+        "Único"
+      ],
+      "image": "/assets/produtos/look-vestido-longo-floral.png",
+      "featured": true,
+      "active": true,
+      "description": "Tamanho único (veste do 36 ao 44), com estampa floral para momentos especiais.",
+      "createdAt": "2026-10-28T12:55:28.477Z"
+    },
+    {
+      "id": "blusa-azul-calca-vinho",
+      "name": "Body azul em poliamida",
+      "category": "Look elegante",
+      "price": 0,
+      "sizes": [
+        "Único"
+      ],
+      "image": "/assets/produtos/look-blusa-azul-calca-vinho.png",
+      "featured": true,
+      "active": true,
+      "description": "Body tamanho único, confeccionado em 100% poliamida.",
+      "createdAt": "2026-10-28T12:55:28.478Z"
+    },
+    {
+      "id": "vestido-midi-preto",
+      "name": "Vestido preto",
+      "category": "Vestido",
+      "price": 0,
+      "sizes": [
+        "Único"
+      ],
+      "image": "/assets/produtos/look-vestido-midi-preto.png",
+      "featured": true,
+      "active": true,
+      "description": "Vestido tamanho único (veste do 36 ao 44), clássico e fluido.",
+      "createdAt": "2026-10-28T12:55:28.479Z"
     }
   ],
   "orders": [
     {
       "id": "PED-1001",
       "customer": "Marina S.",
-      "status": "Pendente",
+      "status": "Cancelado",
       "total": "A confirmar",
       "items": 2,
       "createdAt": "2026-10-20T15:20:00.000Z"
@@ -61,7 +102,7 @@
     {
       "id": "PED-1002",
       "customer": "Ana L.",
-      "status": "Em produção",
+      "status": "Cancelado",
       "total": "A confirmar",
       "items": 1,
       "createdAt": "2026-10-25T10:00:00.000Z"

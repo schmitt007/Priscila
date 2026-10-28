@@ -381,9 +381,22 @@ button[type="submit"]:hover,
   color: var(--text);
 }
 
+.action-button.edit {
+  border-color: rgba(236, 40, 203, 0.4);
+  color: #ffd7fb;
+}
+
 .action-button.delete {
   border-color: rgba(255, 107, 123, 0.4);
   color: #ffd9df;
+}
+
+.order-status-select {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
 }
 
 .form-grid {
