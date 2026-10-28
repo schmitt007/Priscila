@@ -1,0 +1,55 @@
+{
+  "products": [
+    {
+      "id": "blusa-azul-shorts-jeans",
+      "name": "Bata modal + short jeans",
+      "category": "Casual",
+      "price": 0,
+      "sizes": [
+        "Único",
+        "36",
+        "38",
+        "40",
+        "42",
+        "44"
+      ],
+      "image": "/assets/produtos/look-blusa-azul-shorts-jeans.png",
+      "featured": true,
+      "active": true,
+      "description": "Bata tamanho único e short jeans em vários tamanhos.",
+      "createdAt": "2026-10-28T12:55:28.474Z"
+    },
+    {
+      "id": "conjunto-vinho",
+      "name": "Conjunto pantalona vinho",
+      "category": "Conjunto",
+      "price": 0,
+      "sizes": [
+        "Único"
+      ],
+      "image": "/assets/produtos/look-conjunto-vinho.png",
+      "featured": true,
+      "active": true,
+      "description": "Conjunto elegante e sofisticado para ocasiões especiais.",
+      "createdAt": "2026-10-28T12:55:28.475Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "PED-1001",
+      "customer": "Marina S.",
+      "status": "Pendente",
+      "total": "A confirmar",
+      "items": 2,
+      "createdAt": "2026-10-20T15:20:00.000Z"
+    },
+    {
+      "id": "PED-1002",
+      "customer": "Ana L.",
+      "status": "Em produção",
+      "total": "A confirmar",
+      "items": 1,
+      "createdAt": "2026-10-25T10:00:00.000Z"
+    }
+  ]
+}

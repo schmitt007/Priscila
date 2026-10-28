@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel Administrativo | Priscila Modas</title>
+    <link rel="stylesheet" href="/admin/styles.css" />
+  </head>
+  <body class="admin-body">
+    <div id="login-screen" class="auth-screen active">
+      <div class="auth-card">
+        <div class="brand-lockup">
+          <div class="brand-mark">P</div>
+          <div>
+            <p class="eyebrow">Priscila Modas</p>
+            <h1>Painel Administrativo</h1>
+          </div>
+        </div>
+        <form id="login-form" class="auth-form">
+          <label>
+            Usuário
+            <input id="username" name="username" type="text" value="admin" autocomplete="username" required />
+          </label>
+          <label>
+            Senha
+            <input id="password" name="password" type="password" autocomplete="current-password" required />
+          </label>
+          <button type="submit">Entrar</button>
+          <p id="login-error" class="form-message error" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+
+    <div id="admin-screen" class="admin-screen" hidden>
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="brand-mark small">P</div>
+          <div>
+            <strong>Priscila</strong>
+            <span>MODAS</span>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <button type="button" class="nav-button active" data-view="dashboard">Dashboard</button>
+          <button type="button" class="nav-button" data-view="products">Produtos</button>
+          <button type="button" class="nav-button" data-view="orders">Pedidos</button>
+        </nav>
+
+        <button id="logout-button" type="button" class="logout-button">Sair</button>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Área restrita</p>
+            <h2 id="dashboard-title">Dashboard</h2>
+          </div>
+          <div class="user-pill" id="user-pill">admin</div>
+        </header>
+
+        <section id="view-dashboard" class="admin-view active">
+          <div class="stats-grid">
+            <article class="stat-card">
+              <span>Total de produtos</span>
+              <strong id="stat-total-products">0</strong>
+            </article>
+            <article class="stat-card accent">
+              <span>Produtos ativos</span>
+              <strong id="stat-active-products">0</strong>
+            </article>
+            <article class="stat-card">
+              <span>Pedidos</span>
+              <strong id="stat-total-orders">0</strong>
+            </article>
+            <article class="stat-card warning">
+              <span>Pendentes</span>
+              <strong id="stat-pending-orders">0</strong>
+            </article>
+          </div>
+
+          <div class="panel-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Últimos pedidos</h3>
+              </div>
+              <div id="orders-list" class="list-table"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Catálogo rápido</h3>
+              </div>
+              <div id="products-summary" class="list-table compact"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="view-products" class="admin-view" hidden>
+          <div class="panel form-panel">
+            <div class="panel-header">
+              <h3>Adicionar produto</h3>
+            </div>
+            <form id="product-form" class="product-form">
+              <div class="form-grid">
+                <label>
+                  Nome
+                  <input name="name" type="text" required />
+                </label>
+                <label>
+                  Categoria
+                  <input name="category" type="text" value="Geral" required />
+                </label>
+                <label>
+                  Preço
+                  <input name="price" type="number" min="0" step="0.01" value="0" required />
+                </label>
+                <label>
+                  Imagem
+                  <input name="image" type="text" placeholder="/assets/produtos/arquivo.png" required />
+                </label>
+              </div>
+              <label>
+                Descrição
+                <textarea name="description" rows="3" required></textarea>
+              </label>
+              <label>
+                Tamanhos (separados por vírgula)
+                <input name="sizes" type="text" placeholder="Único, 36, 38" />
+              </label>
+              <div class="checkbox-row">
+                <label><input name="featured" type="checkbox" /> Destaque</label>
+                <label><input name="active" type="checkbox" checked /> Ativo</label>
+              </div>
+              <button type="submit" class="primary-button">Salvar produto</button>
+              <p id="product-message" class="form-message" aria-live="polite"></p>
+            </form>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Produtos cadastrados</h3>
+            </div>
+            <div id="product-list" class="list-table product-list"></div>
+          </div>
+        </section>
+
+        <section id="view-orders" class="admin-view" hidden>
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Pedidos</h3>
+            </div>
+            <div id="order-table" class="list-table orders-table"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/admin/app.js"></script>
+  </body>
+</html>
