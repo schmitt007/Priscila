@@ -92,6 +92,14 @@
   ],
   "orders": [
     {
+      "id": "PED-585747",
+      "customer": "Cliente teste",
+      "status": "Pendente",
+      "total": "A confirmar",
+      "items": 2,
+      "createdAt": "2026-10-28T17:13:05.748Z"
+    },
+    {
       "id": "PED-1001",
       "customer": "Marina S.",
       "status": "Cancelado",

@@ -282,6 +282,41 @@ async function handleAdminApi(request, response, pathname) {
     return;
   }
 
+  if (pathname === "/api/orders" && request.method === "POST") {
+    let body = "";
+    request.on("data", (chunk) => {
+      body += chunk;
+    });
+    request.on("end", async () => {
+      try {
+        const payload = JSON.parse(body || "{}");
+        const store = await readStoreFile();
+        const orders = Array.isArray(store.orders) ? store.orders : [];
+        const cartItems = Array.isArray(payload.items) ? payload.items : [];
+        const customer = String(payload.customer || "Cliente do site").trim() || "Cliente do site";
+        const nextOrder = serializeOrder(
+          {
+            id: `PED-${Date.now().toString().slice(-6)}`,
+            customer,
+            status: "Pendente",
+            total: "A confirmar",
+            items: cartItems.reduce((total, item) => total + Number(item.quantity || 0), 0),
+            createdAt: new Date().toISOString(),
+          },
+          orders.length
+        );
+
+        orders.unshift(nextOrder);
+        store.orders = orders;
+        await writeStoreFile(store);
+        sendJson(response, 201, { ok: true, order: nextOrder });
+      } catch {
+        sendJson(response, 400, { error: "Dados do pedido inválidos." });
+      }
+    });
+    return;
+  }
+
   if (pathname === "/api/admin/dashboard") {
     const store = await readStoreFile();
     const products = Array.isArray(store.products) ? store.products : [];
@@ -461,6 +496,46 @@ const server = createServer(async (request, response) => {
 
   if (pathname === "/api/products") {
     await handleAdminApi(request, response, pathname);
+    return;
+  }
+
+  if (pathname === "/api/orders") {
+    if (request.method !== "POST") {
+      response.setHeader("Allow", "POST");
+      sendJson(response, 405, { error: "Método não permitido." });
+      return;
+    }
+
+    let body = "";
+    request.on("data", (chunk) => {
+      body += chunk;
+    });
+    request.on("end", async () => {
+      try {
+        const payload = JSON.parse(body || "{}");
+        const store = await readStoreFile();
+        const orders = Array.isArray(store.orders) ? store.orders : [];
+        const customer = String(payload.customer || "Cliente do site").trim() || "Cliente do site";
+        const nextOrder = serializeOrder(
+          {
+            id: `PED-${Date.now().toString().slice(-6)}`,
+            customer,
+            status: "Pendente",
+            total: "A confirmar",
+            items: Array.isArray(payload.items) ? payload.items.reduce((total, item) => total + Number(item.quantity || 0), 0) : 0,
+            createdAt: new Date().toISOString(),
+          },
+          orders.length
+        );
+
+        orders.unshift(nextOrder);
+        store.orders = orders;
+        await writeStoreFile(store);
+        sendJson(response, 201, { ok: true, order: nextOrder });
+      } catch {
+        sendJson(response, 400, { error: "Dados do pedido inválidos." });
+      }
+    });
     return;
   }
 

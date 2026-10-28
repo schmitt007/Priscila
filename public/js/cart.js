@@ -352,20 +352,51 @@ cartItemsContainer.addEventListener("click", (event) => {
   persistAndRender();
 });
 
-checkoutButton.addEventListener("click", () => {
+checkoutButton.addEventListener("click", async () => {
   if (cart.length === 0) return;
 
-  const orderLines = cart.map((item) => {
-    const product = products.get(item.id);
-    return `- ${product.name} | Tamanho ${item.size} | Quantidade: ${item.quantity} | Preço a confirmar`;
-  });
-  const message = [
-    "Olá! Quero consultar e fazer este pedido pela Priscila Modas:",
-    "",
-    ...orderLines,
-    "",
-    "Pode confirmar os preços, a disponibilidade dos tamanhos e o valor total?",
-  ].join("\n");
-  const checkoutUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-  window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+  const orderPayload = {
+    customer: "Cliente do site",
+    items: cart.map((item) => ({
+      id: item.id,
+      size: item.size,
+      quantity: item.quantity,
+    })),
+  };
+
+  try {
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orderPayload),
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload.error || "Não foi possível registrar o pedido.");
+    }
+
+    const orderLines = cart.map((item) => {
+      const product = products.get(item.id);
+      return `- ${product?.name || "Produto"} | Tamanho ${item.size} | Quantidade: ${item.quantity} | Preço a confirmar`;
+    });
+
+    const message = [
+      "Olá! Quero consultar e fazer este pedido pela Priscila Modas:",
+      "",
+      ...orderLines,
+      "",
+      `Pedido registrado no painel: ${payload.order?.id || "PED-NEW"}`,
+      "",
+      "Pode confirmar os preços, a disponibilidade dos tamanhos e o valor total?",
+    ].join("\n");
+
+    cart = [];
+    persistAndRender();
+    setCartStatus("Pedido registrado no painel administrativo.");
+    const checkoutUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+  } catch (error) {
+    setCartStatus(error.message || "Não foi possível registrar este pedido.");
+  }
 });
