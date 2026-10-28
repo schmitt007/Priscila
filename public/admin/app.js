@@ -62,6 +62,27 @@ function populateProductForm(product) {
   productForm.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function showLoginScreen() {
+  loginScreen.hidden = false;
+  loginScreen.classList.add("active");
+  adminScreen.hidden = true;
+  adminScreen.classList.remove("active");
+  navButtons.forEach((button) => button.classList.remove("active"));
+  adminViews.forEach((view) => {
+    view.hidden = true;
+    view.classList.remove("active");
+  });
+  state.currentView = "dashboard";
+}
+
+function showAdminScreen() {
+  loginScreen.hidden = true;
+  loginScreen.classList.remove("active");
+  adminScreen.hidden = false;
+  adminScreen.classList.add("active");
+  showView("dashboard");
+}
+
 function showView(viewName) {
   state.currentView = viewName;
   dashboardTitle.textContent = viewName === "dashboard" ? "Dashboard" : viewName === "products" ? "Produtos" : "Pedidos";
@@ -205,10 +226,8 @@ async function login(username, password) {
   });
   state.user = result.user;
   userPill.textContent = state.user;
-  loginScreen.classList.remove("active");
-  loginScreen.hidden = true;
-  adminScreen.hidden = false;
-  showView("dashboard");
+  loginForm.reset();
+  showAdminScreen();
   await loadDashboard();
 }
 
@@ -216,34 +235,31 @@ async function checkSession() {
   try {
     const result = await fetchJson("/api/admin/session");
     if (!result.authenticated) {
-      loginScreen.hidden = false;
-      loginScreen.classList.add("active");
-      adminScreen.hidden = true;
+      showLoginScreen();
       return;
     }
 
     state.user = result.user;
     userPill.textContent = state.user;
-    loginScreen.hidden = true;
-    loginScreen.classList.remove("active");
-    adminScreen.hidden = false;
-    showView("dashboard");
+    showAdminScreen();
     await loadDashboard();
   } catch {
-    loginScreen.hidden = false;
-    loginScreen.classList.add("active");
-    adminScreen.hidden = true;
+    showLoginScreen();
   }
 }
 
 async function logout() {
-  await fetchJson("/api/admin/logout", { method: "POST" });
+  try {
+    await fetchJson("/api/admin/logout", { method: "POST" });
+  } catch {
+    // Mantém o comportamento de logout mesmo que o servidor responda sem sessão ativa.
+  }
+
   state.user = null;
   loginError.textContent = "";
-  loginScreen.hidden = false;
-  loginScreen.classList.add("active");
-  adminScreen.hidden = true;
+  loginForm.reset();
   resetProductForm();
+  showLoginScreen();
 }
 
 loginForm.addEventListener("submit", async (event) => {
