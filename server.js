@@ -6,7 +6,7 @@ const crypto = require("node:crypto");
 const publicDirectory = path.join(__dirname, "public");
 const dataDirectory = path.join(__dirname, "data");
 const storeFilePath = path.join(dataDirectory, "store.json");
-const adminUsername = process.env.ADMIN_USERNAME || "adm";
+const adminUsername = process.env.ADMIN_USERNAME || "admin";
 const adminPassword = process.env.ADMIN_PASSWORD || "priscila123";
 const adminSessions = new Map();
 
@@ -216,6 +216,13 @@ async function handleAdminApi(request, response, pathname) {
     return;
   }
 
+  if (pathname === "/api/products") {
+    const store = await readStoreFile();
+    const products = Array.isArray(store.products) ? store.products : [];
+    sendJson(response, 200, { products: products.filter((product) => product.active !== false) });
+    return;
+  }
+
   if (pathname === "/api/admin/dashboard") {
     const store = await readStoreFile();
     const products = Array.isArray(store.products) ? store.products : [];
@@ -350,6 +357,11 @@ const server = createServer(async (request, response) => {
       "Cache-Control": "no-store",
     });
     response.end(request.method === "HEAD" ? undefined : JSON.stringify({ status: "ok" }));
+    return;
+  }
+
+  if (pathname === "/api/products") {
+    await handleAdminApi(request, response, pathname);
     return;
   }
 

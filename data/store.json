@@ -32,6 +32,21 @@
       "active": true,
       "description": "Conjunto elegante e sofisticado para ocasiões especiais.",
       "createdAt": "2026-10-28T12:55:28.475Z"
+    },
+    {
+      "id": "3a302630-338f-4c00-af7a-df1b99d761fd",
+      "name": "Produto teste",
+      "category": "Teste",
+      "price": 0,
+      "sizes": [
+        "?nico",
+        "38"
+      ],
+      "image": "/assets/produtos/look-vestido-midi-preto.png",
+      "description": "Produto carregado do painel",
+      "featured": true,
+      "active": true,
+      "createdAt": "2026-10-28T14:27:45.305Z"
     }
   ],
   "orders": [

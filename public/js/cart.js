@@ -7,11 +7,17 @@ const cartCount = document.querySelector(".cart-count");
 const cartTriggers = document.querySelectorAll(".cart-trigger");
 const cartCloseButton = document.querySelector(".cart-close");
 const checkoutButton = document.querySelector(".checkout-button");
+const catalogGrid = document.querySelector("#product-grid");
 const cartStorageKey = "priscila-modas-cart";
 const whatsappNumber = "5515997302132";
-const products = new Map(
-  [...document.querySelectorAll(".product-card")].map((card) => {
+const products = new Map();
+
+function syncProductsMap() {
+  const productCards = [...document.querySelectorAll(".product-card")];
+  productCards.forEach((card) => {
     const button = card.querySelector(".add-to-cart");
+    if (!button || !button.dataset.productId) return;
+
     const selectors = [...card.querySelectorAll(".product-size")].map((select) => ({
       label:
         select.dataset.sizeLabel ||
@@ -26,21 +32,68 @@ const products = new Map(
       [[]]
     );
 
-    return [
-      button.dataset.productId,
-      {
-        id: button.dataset.productId,
-        name: card.querySelector("h3").textContent.trim(),
-        image: card.querySelector(".product-image img").getAttribute("src"),
-        variants: variants.map((variant) =>
-          variant.length === 1
-            ? variant[0].value
-            : variant.map(({ label, value }) => `${label}: ${value}`).join(" | ")
-        ),
-      },
-    ];
-  })
-);
+    products.set(button.dataset.productId, {
+      id: button.dataset.productId,
+      name: card.querySelector("h3").textContent.trim(),
+      image: card.querySelector(".product-image img")?.getAttribute("src") || "",
+      variants: variants.map((variant) =>
+        variant.length === 1
+          ? variant[0].value
+          : variant.map(({ label, value }) => `${label}: ${value}`).join(" | ")
+      ),
+    });
+  });
+}
+
+function renderProductCard(product) {
+  const article = document.createElement("article");
+  article.className = "product-card";
+
+  const imageUrl = product.image || "/assets/produtos/look-vestido-midi-preto.png";
+  const productSizes = Array.isArray(product.sizes) && product.sizes.length > 0 ? product.sizes : ["Único"];
+  const sizeOptions = productSizes
+    .map((size) => `<option value="${size}">${size}</option>`)
+    .join("");
+
+  article.innerHTML = `
+    <a class="product-image product-image--centered" href="${imageUrl}" target="_blank" rel="noopener noreferrer" aria-label="Ampliar ${product.name}">
+      <img src="${imageUrl}" alt="${product.name}" loading="lazy" />
+      <span class="product-category">${product.category || "Produto"}</span>
+    </a>
+    <div class="product-info">
+      <div><h3>${product.name}</h3><p>${product.description || "Produto disponível na Priscila Modas."}</p></div>
+      <p class="product-price">Preço: <strong>${Number(product.price || 0) > 0 ? Number(product.price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "A confirmar"}</strong></p>
+      <label class="size-picker">Tamanho
+        <select class="product-size" data-size-label="Tamanho" aria-label="Tamanho: ${product.name}">
+          <option value="">Escolha o tamanho</option>
+          ${sizeOptions}
+        </select>
+      </label>
+      <button class="add-to-cart" type="button" data-product-id="${product.id}">Adicionar ao carrinho</button>
+    </div>
+  `;
+
+  return article;
+}
+
+async function loadProducts() {
+  if (!catalogGrid) return;
+
+  try {
+    const response = await fetch("/api/products", { headers: { Accept: "application/json" } });
+    if (!response.ok) {
+      throw new Error("Não foi possível carregar o catálogo.");
+    }
+    const data = await response.json();
+    const productsList = Array.isArray(data.products) ? data.products : [];
+    catalogGrid.replaceChildren(...productsList.map(renderProductCard));
+    syncProductsMap();
+    bindAddToCartButtons();
+  } catch (error) {
+    console.error("Falha ao carregar produtos:", error);
+    catalogGrid.innerHTML = '<div class="empty-state">Não foi possível carregar os produtos no momento.</div>';
+  }
+}
 
 let cart = [];
 let lastCartTrigger = null;
@@ -190,6 +243,10 @@ function persistAndRender() {
 cart = loadCart();
 renderCart();
 
+if (catalogGrid) {
+  loadProducts();
+}
+
 cartTriggers.forEach((trigger) => {
   trigger.addEventListener("click", () => openCart(trigger));
 });
@@ -222,47 +279,51 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-document.querySelectorAll(".add-to-cart").forEach((button) => {
-  button.addEventListener("click", () => {
-    const card = button.closest(".product-card");
-    const sizeSelects = [...card.querySelectorAll(".product-size")];
-    const emptySelect = sizeSelects.find((select) => !select.value);
+function bindAddToCartButtons() {
+  document.querySelectorAll(".add-to-cart").forEach((button) => {
+    button.addEventListener("click", () => {
+      const card = button.closest(".product-card");
+      const sizeSelects = [...card.querySelectorAll(".product-size")];
+      const emptySelect = sizeSelects.find((select) => !select.value);
 
-    if (emptySelect) {
-      emptySelect.setCustomValidity("Escolha um tamanho para cada peça.");
-      emptySelect.reportValidity();
-      emptySelect.addEventListener("change", () => emptySelect.setCustomValidity(""), { once: true });
-      return;
-    }
-
-    const selections = sizeSelects.map((select) => ({
-      label:
-        select.dataset.sizeLabel ||
-        select.closest("label").childNodes[0].textContent.trim(),
-      value: select.value,
-    }));
-    const size =
-      selections.length === 1
-        ? selections[0].value
-        : selections.map(({ label, value }) => `${label}: ${value}`).join(" | ");
-    const existingItem = cart.find(
-      (item) => item.id === button.dataset.productId && item.size === size
-    );
-    if (existingItem) {
-      if (existingItem.quantity === 99) {
-        setCartStatus("O limite por produto é 99 unidades.");
+      if (emptySelect) {
+        emptySelect.setCustomValidity("Escolha um tamanho para cada peça.");
+        emptySelect.reportValidity();
+        emptySelect.addEventListener("change", () => emptySelect.setCustomValidity(""), { once: true });
         return;
       }
-      existingItem.quantity += 1;
-    } else {
-      cart.push({ id: button.dataset.productId, size, quantity: 1 });
-    }
 
-    setCartStatus(`${products.get(button.dataset.productId).name} adicionado ao carrinho.`);
-    persistAndRender();
-    openCart(button);
+      const selections = sizeSelects.map((select) => ({
+        label:
+          select.dataset.sizeLabel ||
+          select.closest("label").childNodes[0].textContent.trim(),
+        value: select.value,
+      }));
+      const size =
+        selections.length === 1
+          ? selections[0].value
+          : selections.map(({ label, value }) => `${label}: ${value}`).join(" | ");
+      const existingItem = cart.find(
+        (item) => item.id === button.dataset.productId && item.size === size
+      );
+      if (existingItem) {
+        if (existingItem.quantity === 99) {
+          setCartStatus("O limite por produto é 99 unidades.");
+          return;
+        }
+        existingItem.quantity += 1;
+      } else {
+        cart.push({ id: button.dataset.productId, size, quantity: 1 });
+      }
+
+      setCartStatus(`${products.get(button.dataset.productId)?.name || "Produto"} adicionado ao carrinho.`);
+      persistAndRender();
+      openCart(button);
+    });
   });
-});
+}
+
+bindAddToCartButtons();
 
 cartItemsContainer.addEventListener("click", (event) => {
   const button = event.target.closest("button[data-action]");
